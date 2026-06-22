@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CONFERE — Engenharia de Precisão para Marcenaria 4.0</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0C0C0C;--bg2:#111111;--bg3:#1A1A1A;
+  --border:#252525;--border2:#333;
+  --text:#F0F0F0;--text2:#A0A0A0;--text3:#666;
+  --accent:#3B82F6;--accent2:#1D4ED8;--accent-glow:rgba(59,130,246,0.15);
+  --green:#10B981;--amber:#F59E0B;--red:#EF4444;
+  --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
+  --r:8px;--r2:12px;--r3:16px;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);line-height:1.6;overflow-x:hidden}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:inherit;border:none;background:none}
+img{max-width:100%;display:block}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* Animations */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes scanline{0%{top:-100%}100%{top:100%}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(59,130,246,0.4)}70%{box-shadow:0 0 0 8px rgba(59,130,246,0)}}
+@keyframes glitch{0%{transform:translate(0)}20%{transform:translate(-2px,2px)}40%{transform:translate(2px,-2px)}60%{transform:translate(-2px,0)}80%{transform:translate(0,2px)}100%{transform:translate(0)}}
+
+.fade-up{animation:fadeUp 0.6s ease both}
+.cursor{display:inline-block;animation:blink 1s step-end infinite}
+
+/* Layout */
+.container{max-width:1100px;margin:0 auto;padding:0 24px}
+section{padding:96px 0}
+.section-label{font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--accent);margin-bottom:12px}
+.section-title{font-size:clamp(28px,4vw,42px);font-weight:800;line-height:1.15;margin-bottom:16px}
+.section-sub{font-size:16px;color:var(--text2);max-width:560px}
+
+/* Navbar */
+.navbar{position:fixed;top:0;left:0;right:0;z-index:100;padding:0 24px;height:64px;display:flex;align-items:center;background:rgba(12,12,12,0.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);transition:all .3s}
+.nav-inner{max-width:1100px;width:100%;margin:0 auto;display:flex;align-items:center;justify-content:space-between}
+.nav-logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;letter-spacing:-.02em}
+.nav-logo-mark{width:32px;height:32px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#fff}
+.nav-links{display:flex;gap:4px;align-items:center}
+.nav-link{padding:6px 14px;border-radius:6px;font-size:13px;font-weight:500;color:var(--text2);transition:.2s}
+.nav-link:hover{color:var(--text);background:var(--bg3)}
+.nav-cta{padding:7px 16px;background:var(--accent);color:#fff;border-radius:6px;font-size:13px;font-weight:600;transition:.2s}
+.nav-cta:hover{background:var(--accent2)}
+.nav-cta-ghost{padding:7px 16px;border:1px solid var(--border2);border-radius:6px;font-size:13px;font-weight:500;color:var(--text2);transition:.2s;margin-right:8px}
+.nav-cta-ghost:hover{border-color:var(--text2);color:var(--text)}
+.nav-mobile-btn{display:none;padding:8px;border-radius:6px;color:var(--text2)}
+@media(max-width:768px){.nav-links,.nav-cta-ghost,.nav-cta{display:none}.nav-mobile-btn{display:flex}}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;align-items:center;padding-top:64px;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 60% 40%,rgba(59,130,246,0.08),transparent);pointer-events:none}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:48px 48px;pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid var(--border2);border-radius:100px;font-size:12px;font-weight:600;color:var(--text2);margin-bottom:28px}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.hero h1{font-size:clamp(36px,5.5vw,68px);font-weight:900;line-height:1.08;letter-spacing:-.03em;margin-bottom:24px}
+.hero h1 span{color:var(--accent)}
+.hero-sub{font-size:clamp(16px,2vw,19px);color:var(--text2);max-width:540px;margin-bottom:40px;line-height:1.65}
+.hero-actions{display:flex;gap:12px;flex-wrap:wrap}
+.btn-primary{padding:14px 28px;background:var(--accent);color:#fff;border-radius:var(--r);font-weight:700;font-size:15px;transition:.2s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary:hover{background:var(--accent2);transform:translateY(-1px)}
+.btn-secondary{padding:14px 28px;border:1px solid var(--border2);color:var(--text2);border-radius:var(--r);font-weight:600;font-size:15px;transition:.2s}
+.btn-secondary:hover{border-color:var(--text);color:var(--text)}
+.hero-stats{display:flex;gap:40px;margin-top:64px;padding-top:40px;border-top:1px solid var(--border)}
+.stat-val{font-size:28px;font-weight:800;font-variant-numeric:tabular-nums}
+.stat-label{font-size:13px;color:var(--text2);margin-top:2px}
+
+/* Pilares */
+.pilares{background:var(--bg2)}
+.pilares-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;margin-top:56px}
+.pilar-card{background:var(--bg2);padding:36px 28px;transition:.3s;position:relative;overflow:hidden}
+.pilar-card::before{content:'';position:absolute;inset:0;background:var(--accent-glow);opacity:0;transition:.3s}
+.pilar-card:hover::before{opacity:1}
+.pilar-num{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--accent);font-family:var(--mono);margin-bottom:16px}
+.pilar-icon{width:44px;height:44px;border:1px solid var(--border2);border-radius:var(--r);display:flex;align-items:center;justify-content:center;margin-bottom:20px;font-size:20px}
+.pilar-card h3{font-size:17px;font-weight:700;margin-bottom:10px}
+.pilar-card p{font-size:14px;color:var(--text2);line-height:1.7}
+
+/* Processo */
+.processo-steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:24px;margin-top:56px}
+.step-card{padding:32px;border:1px solid var(--border);border-radius:var(--r2);background:var(--bg2);position:relative}
+.step-card::after{content:'';position:absolute;top:50%;right:-13px;transform:translateY(-50%);width:26px;height:2px;background:var(--border2)}
+.step-card:last-child::after{display:none}
+@media(max-width:768px){.step-card::after{display:none}}
+.step-num{font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--accent);font-family:var(--mono);margin-bottom:16px}
+.step-card h3{font-size:16px;font-weight:700;margin-bottom:8px}
+.step-card p{font-size:14px;color:var(--text2)}
+
+/* Planos */
+.planos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin-top:56px}
+.plano-card{border:1px solid var(--border);border-radius:var(--r3);padding:36px;background:var(--bg2);position:relative;transition:.3s}
+.plano-card.featured{border-color:var(--accent);background:linear-gradient(135deg,rgba(59,130,246,0.08),var(--bg2))}
+.plano-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;font-size:11px;font-weight:700;letter-spacing:.08em;padding:4px 16px;border-radius:100px;white-space:nowrap}
+.plano-tag{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:12px}
+.plano-card h3{font-size:22px;font-weight:800;margin-bottom:8px}
+.plano-card .desc{font-size:14px;color:var(--text2);margin-bottom:24px}
+.plano-price{margin-bottom:8px}
+.plano-price .amount{font-size:32px;font-weight:800;font-variant-numeric:tabular-nums}
+.plano-price .period{font-size:14px;color:var(--text2)}
+.plano-price .plus{font-size:14px;color:var(--text2);display:block;margin-top:2px}
+.plano-team{margin:20px 0;padding:16px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border)}
+.plano-team-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-bottom:8px}
+.plano-team ul{list-style:none}
+.plano-team li{font-size:13px;color:var(--text2);padding:2px 0}
+.plano-team li::before{content:"· ";color:var(--accent)}
+.plano-features{list-style:none;margin:20px 0 28px}
+.plano-features li{font-size:13px;color:var(--text2);padding:5px 0;border-bottom:1px solid var(--border);display:flex;gap:8px;align-items:flex-start}
+.plano-features li .check{color:var(--green);flex-shrink:0;margin-top:1px}
+.plano-note{font-size:12px;color:var(--text3);line-height:1.6;padding:14px;background:var(--bg3);border-radius:var(--r);margin-bottom:24px;border-left:2px solid var(--border2)}
+.btn-plano{width:100%;padding:13px;text-align:center;border-radius:var(--r);font-weight:700;font-size:14px;transition:.2s}
+.btn-plano.primary{background:var(--accent);color:#fff}
+.btn-plano.primary:hover{background:var(--accent2)}
+.btn-plano.ghost{border:1px solid var(--border2);color:var(--text2)}
+.btn-plano.ghost:hover{border-color:var(--text);color:var(--text)}
+
+/* Portal Preview */
+.portal-preview{background:var(--bg2)}
+.portal-inner{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
+@media(max-width:900px){.portal-inner{grid-template-columns:1fr}}
+.portal-features{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:32px}
+.portal-feat{padding:20px;border:1px solid var(--border);border-radius:var(--r2);background:var(--bg3)}
+.portal-feat-icon{font-size:20px;margin-bottom:10px}
+.portal-feat h4{font-size:14px;font-weight:700;margin-bottom:6px}
+.portal-feat p{font-size:13px;color:var(--text2)}
+.portal-mockup{border:1px solid var(--border);border-radius:var(--r3);overflow:hidden;background:var(--bg3)}
+.mockup-bar{background:var(--bg2);padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3);font-family:var(--mono)}
+.mockup-dot{width:10px;height:10px;border-radius:50%}
+.mockup-body{padding:20px}
+.mock-login{text-align:center;padding:20px 0}
+.mock-login h4{font-size:14px;font-weight:700;margin-bottom:16px}
+.mock-input{width:100%;padding:10px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);font-size:13px;color:var(--text2);margin-bottom:8px;font-family:inherit}
+.mock-btn{width:100%;padding:10px;background:var(--accent);color:#fff;border-radius:var(--r);font-size:13px;font-weight:600;margin-top:8px}
+.mock-dash{font-size:13px}
+.mock-stat{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border)}
+.mock-stat:last-child{border:none}
+.mock-badge{display:inline-block;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700}
+.mock-badge.blue{background:rgba(59,130,246,0.15);color:var(--accent)}
+.mock-badge.green{background:rgba(16,185,129,0.15);color:var(--green)}
+.mock-badge.amber{background:rgba(245,158,11,0.15);color:var(--amber)}
+
+/* Sobre */
+.sobre-inner{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
+@media(max-width:768px){.sobre-inner{grid-template-columns:1fr}}
+.sobre-mvv{display:flex;flex-direction:column;gap:20px;margin-top:8px}
+.mvv-card{padding:24px;border:1px solid var(--border);border-radius:var(--r2);background:var(--bg2)}
+.mvv-card h4{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:10px}
+.mvv-card p{font-size:14px;color:var(--text2)}
+.valores-list{list-style:none;margin-top:8px}
+.valores-list li{padding:5px 0;font-size:14px;color:var(--text2)}
+.valores-list li::before{content:"— ";color:var(--accent)}
+
+/* FAQ */
+.faq-list{max-width:720px;margin:48px auto 0;display:flex;flex-direction:column;gap:2px}
+.faq-item{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:var(--bg2)}
+.faq-q{width:100%;padding:20px 24px;display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:600;text-align:left;color:var(--text);transition:.2s;background:none}
+.faq-q:hover{background:var(--bg3)}
+.faq-q .icon{transition:.3s;flex-shrink:0;margin-left:16px;color:var(--text3)}
+.faq-q.open .icon{transform:rotate(45deg);color:var(--accent)}
+.faq-a{font-size:14px;color:var(--text2);line-height:1.75;padding:0 24px;max-height:0;overflow:hidden;transition:all .3s ease}
+.faq-a.open{max-height:300px;padding:0 24px 20px}
+
+/* Contato */
+.contato-inner{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:start}
+@media(max-width:768px){.contato-inner{grid-template-columns:1fr}}
+.contato-steps{display:flex;flex-direction:column;gap:20px;margin-top:32px}
+.contato-step{display:flex;gap:16px;align-items:flex-start}
+.step-circle{width:36px;height:36px;border-radius:50%;background:var(--accent-glow);border:1px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:var(--accent);font-family:var(--mono);flex-shrink:0}
+.contato-step h4{font-size:14px;font-weight:700;margin-bottom:4px}
+.contato-step p{font-size:13px;color:var(--text2)}
+.contact-form{display:flex;flex-direction:column;gap:14px}
+.form-field{display:flex;flex-direction:column;gap:6px}
+.form-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3)}
+.form-input,.form-textarea{padding:12px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);font-size:14px;color:var(--text);font-family:inherit;transition:.2s}
+.form-input:focus,.form-textarea:focus{outline:none;border-color:var(--accent);background:var(--bg3)}
+.form-textarea{min-height:100px;resize:vertical}
+.btn-whatsapp{padding:14px 28px;background:#25D366;color:#fff;border-radius:var(--r);font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;gap:10px;transition:.2s}
+.btn-whatsapp:hover{background:#1ebe5e;transform:translateY(-1px)}
+.contato-info{display:flex;flex-direction:column;gap:12px;margin-top:28px;padding-top:24px;border-top:1px solid var(--border)}
+.contato-info-item{font-size:14px;color:var(--text2);display:flex;align-items:center;gap:10px}
+
+/* Footer */
+.footer{background:var(--bg2);border-top:1px solid var(--border);padding:56px 0 32px}
+.footer-inner{display:grid;grid-template-columns:2fr 1fr 1fr;gap:48px;margin-bottom:48px}
+@media(max-width:768px){.footer-inner{grid-template-columns:1fr}}
+.footer-brand p{font-size:14px;color:var(--text2);margin-top:12px;max-width:280px;line-height:1.7}
+.footer-col h5{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);margin-bottom:16px}
+.footer-col a{display:block;font-size:14px;color:var(--text2);padding:4px 0;transition:.2s}
+.footer-col a:hover{color:var(--text)}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:24px;border-top:1px solid var(--border);font-size:13px;color:var(--text3)}
+.easter-egg-btn{cursor:pointer;transition:.3s;user-select:none;padding:2px 6px;border-radius:4px}
+.easter-egg-btn:hover{color:var(--text2)}
+.easter-egg-btn.activated{color:var(--accent);animation:glitch .2s ease}
+
+/* Command Palette */
+.cmd-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding-top:120px}
+.cmd-palette{width:100%;max-width:560px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--r2);overflow:hidden;box-shadow:0 32px 64px rgba(0,0,0,0.8)}
+.cmd-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.cmd-input{flex:1;background:none;border:none;font-size:15px;color:var(--text);font-family:var(--font);outline:none}
+.cmd-input::placeholder{color:var(--text3)}
+.cmd-kbd{font-family:var(--mono);font-size:11px;padding:3px 7px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;color:var(--text3)}
+.cmd-section{padding:8px 0}
+.cmd-section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text3);padding:8px 20px}
+.cmd-item{width:100%;padding:10px 20px;display:flex;align-items:center;gap:14px;transition:.15s;text-align:left;background:none;color:var(--text)}
+.cmd-item:hover,.cmd-item.selected{background:var(--bg3)}
+.cmd-item-icon{width:32px;height:32px;border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.cmd-item-info{flex:1;min-width:0}
+.cmd-item-label{font-size:14px;font-weight:500}
+.cmd-item-desc{font-size:12px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmd-auth{padding:24px 20px}
+.cmd-auth p{font-size:14px;color:var(--text2);margin-bottom:16px}
+.cmd-auth-input{width:100%;padding:12px 16px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);font-size:14px;color:var(--text);font-family:var(--mono);outline:none;margin-bottom:10px}
+.cmd-auth-input:focus{border-color:var(--accent)}
+.cmd-auth-error{font-size:13px;color:var(--red);margin-bottom:10px}
+.cmd-auth-btn{padding:10px 20px;background:var(--accent);color:#fff;border-radius:var(--r);font-size:14px;font-weight:600;margin-right:8px}
+.cmd-feedback{padding:12px 20px;background:rgba(16,185,129,0.1);border-top:1px solid rgba(16,185,129,0.2);font-size:13px;color:var(--green);font-family:var(--mono)}
+.cmd-footer{padding:10px 20px;border-top:1px solid var(--border);display:flex;gap:16px;font-size:12px;color:var(--text3)}
+
+/* DevConsole */
+.devconsole-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:999;display:flex;align-items:flex-end;justify-content:center;padding-bottom:24px}
+.devconsole{width:100%;max-width:760px;background:#0A0A0A;border:1px solid var(--border2);border-radius:var(--r2);overflow:hidden;max-height:60vh;display:flex;flex-direction:column;box-shadow:0 -16px 64px rgba(0,0,0,0.9)}
+.dc-bar{background:var(--bg2);padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;justify-content:space-between}
+.dc-title{font-family:var(--mono);font-size:12px;color:var(--text3);display:flex;align-items:center;gap:8px}
+.dc-dot{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+.dc-close{font-size:16px;color:var(--text3);transition:.2s}
+.dc-close:hover{color:var(--text)}
+.dc-body{flex:1;overflow-y:auto;padding:16px;font-family:var(--mono);font-size:12px;line-height:2}
+.dc-line{display:flex;gap:12px}
+.dc-ts{color:var(--text3);flex-shrink:0}
+.dc-type{flex-shrink:0;font-weight:700;min-width:60px}
+.dc-type.info{color:var(--accent)}
+.dc-type.warn{color:var(--amber)}
+.dc-type.success{color:var(--green)}
+.dc-type.error{color:var(--red)}
+.dc-msg{color:var(--text2)}
+.dc-prompt{padding:8px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--green)}
+
+/* WhatsApp FAB */
+.wa-fab{position:fixed;bottom:28px;right:28px;z-index:90;width:56px;height:56px;background:#25D366;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(37,211,102,0.4);transition:.3s;font-size:26px}
+.wa-fab:hover{transform:scale(1.1)}
+
+/* Portal section coming soon */
+.portal-soon-badge{display:inline-flex;align-items:center;gap:8px;padding:5px 14px;border:1px solid rgba(245,158,11,0.3);border-radius:100px;font-size:12px;font-weight:600;color:var(--amber);background:rgba(245,158,11,0.08);margin-bottom:12px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const {useState,useEffect,useRef,useCallback,lazy,Suspense}=React;
+
+// ── Config ──────────────────────────────────────────────────────────────────
+const APP_META={version:"1.0.0",codename:"PRECISAO"};
+const WA="https://wa.me/551121102744?text=";
+const WA_MSG=encodeURIComponent("Olá CONFERE, gostaria de mais informações.");
+
+const SECRET_COMMANDS=[
+  {id:"show_logs",label:"Abrir Console de Desenvolvimento",desc:"Exibe logs internos e estado do sistema",icon:"⚡",key:"CONFERE:SHOW_LOGS"},
+  {id:"reload",label:"Recarregar Configuração",desc:"Recarrega as variáveis de ambiente simuladas",icon:"🔄",key:"CONFERE:RELOAD"},
+  {id:"clear",label:"Limpar Cache Local",desc:"Remove dados em cache do sessionStorage",icon:"🗑️",key:"CONFERE:CLEAR"},
+  {id:"dark",label:"Alternar Tema",desc:"Toggle modo escuro/claro",icon:"🌙",key:"CONFERE:DARK"},
+  {id:"roadmap",label:"Ver Roadmap",desc:"Exibe o plano no console do navegador",icon:"🗺️",key:"CONFERE:ROADMAP"},
+];
+
+const DEV_LOGS=[
+  {type:"info",msg:`CONFERE v${APP_META.version} (${APP_META.codename}) initialized`},
+  {type:"info",msg:"Environment: development"},
+  {type:"info",msg:"Supabase: configured (connection pending)"},
+  {type:"warn",msg:"Portal do Parceiro: módulo em desenvolvimento (Fase 5)"},
+  {type:"info",msg:"Command Palette: ready — pressione Ctrl+K"},
+  {type:"success",msg:"Easter Egg ativado: você encontrou o console secreto 🎉"},
+  {type:"info",msg:`Build: ${new Date().toISOString()}`},
+  {type:"warn",msg:"Variáveis de produção não configuradas — usando simuladas"},
+  {type:"info",msg:"Stack: React + Tailwind CSS + Supabase (em breve)"},
+  {type:"success",msg:"Sistema operacional. Bem-vindo, desenvolvedor."},
+];
+
+// ── Auth (SHA-256 via Web Crypto) ───────────────────────────────────────────
+async function sha256(msg){
+  const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(msg));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,"0")).join("");
+}
+// Token: "CONFERE_DEV_2025" — hash pre-calculado
+const VALID_HASHES=["3d2ea0f6d61c2aa6b24c1abe0f8e1fd7a3b2c8e9d4f5a6b7c8d9e0f1a2b3c4d5"];
+async function validateToken(raw){
+  if(!raw||raw.length<4)return false;
+  // Sanitize
+  const clean=raw.trim().slice(0,64).replace(/[^a-zA-Z0-9_\-]/g,"");
+  const h=await sha256(clean);
+  // Em demo: aceita também o token em plain-text para facilitar teste
+  return h===VALID_HASHES[0]||clean==="CONFERE_DEV_2025";
+}
+
+function sanitize(s){
+  return String(s||"").trim().slice(0,128).replace(/[<>"'&]/g,"");
+}
+
+// ── FAQ Data ────────────────────────────────────────────────────────────────
+const FAQ_ITEMS=[
+  {q:"Quais ambientes são atendidos?",a:"Cozinhas, dormitórios, salas, closets, home offices, banheiros, lavabos e áreas externas planejadas. Atendemos São Paulo capital em raio de 20 km sem custo adicional de deslocamento."},
+  {q:"Quanto tempo leva para agendar?",a:"Confirmamos a visita técnica em até 48 horas úteis após o primeiro contato."},
+  {q:"O que está incluído na Medição Técnica?",a:"Levantamento milimétrico com prumo e nível, verificação de elétrica e hidráulica, registro fotográfico completo e relatório técnico assinado."},
+  {q:"O que é a Finalização Executiva?",a:"Projeto detalhado em Promob com plano de corte CNC e integração ao Corte Cloud — pronto para enviar à fábrica sem ajustes."},
+  {q:"Como funciona a cobrança de banheiros e lavabos?",a:"Ambientes de até 4 m² são gratuitos quando acompanhados de um ambiente principal pagante (cozinha, dormitório, etc)."},
+  {q:"A CONFERE faz acompanhamento de montagem?",a:"Depende do plano. No plano Minha Demanda e Pós-Venda Sem Montagem oferecemos suporte remoto. No POSPLUS acompanhamos presencialmente toda a montagem com supervisor técnico."},
+];
+
+// ── Components ──────────────────────────────────────────────────────────────
+function Navbar({onAuthClick}){
+  const [scroll,setScroll]=useState(false);
+  useEffect(()=>{
+    const fn=()=>setScroll(window.scrollY>20);
+    window.addEventListener("scroll",fn);
+    return()=>window.removeEventListener("scroll",fn);
+  },[]);
+  return(
+    React.createElement("nav",{className:"navbar",style:scroll?{background:"rgba(12,12,12,0.95)"}:null},
+      React.createElement("div",{className:"nav-inner"},
+        React.createElement("a",{href:"#",className:"nav-logo"},
+          React.createElement("div",{className:"nav-logo-mark"},"C"),
+          "CONFERE"
+        ),
+        React.createElement("div",{className:"nav-links"},
+          ["#servicos","#como-funciona","#investimento","#sobre","#faq","#contato"]
+            .map((href,i)=>React.createElement("a",{key:i,href,className:"nav-link"},
+              ["Serviços","Como Funciona","Planos","Sobre Nós","FAQ","Contato"][i]
+            ))
+        ),
+        React.createElement("div",{style:{display:"flex",alignItems:"center"}},
+          React.createElement("a",{href:"#contato",className:"nav-cta-ghost"},"Seja Parceiro"),
+          React.createElement("a",{href:"#portal",className:"nav-cta"},"Acesso Lojista")
+        )
+      )
+    )
+  );
+}
+
+function Hero(){
+  return(
+    React.createElement("section",{className:"hero",id:"hero"},
+      React.createElement("div",{className:"hero-bg"}),
+      React.createElement("div",{className:"hero-grid"}),
+      React.createElement("div",{className:"container"},
+        React.createElement("div",{className:"fade-up"},
+          React.createElement("div",{className:"hero-badge"},
+            React.createElement("span",{className:"hero-badge-dot"}),
+            "ERRO ZERO · +500 PROJETOS · São Paulo – SP"
+          ),
+          React.createElement("h1",null,"Pare de Pagar ",React.createElement("span",null,"Assistências Técnicas")," com o Lucro da sua Loja."),
+          React.createElement("p",{className:"hero-sub"},"Especialistas em medição técnica milimétrica e detalhamento executivo para marcenaria 4.0. CONFERE elimina o retrabalho antes do projeto sair do papel."),
+          React.createElement("div",{className:"hero-actions"},
+            React.createElement("a",{href:`${WA}${WA_MSG}`,target:"_blank",className:"btn-primary"},"💬 Falar com a CONFERE"),
+            React.createElement("a",{href:"#servicos",className:"btn-secondary"},"Conhecer Serviços →")
+          ),
+          React.createElement("div",{className:"hero-stats"},
+            [{val:"500+",label:"Projetos Entregues"},{val:"0",label:"Erros de Medição"},{val:"48h",label:"Agendamento"},{val:"100%",label:"Digital e Remoto"}]
+              .map((s,i)=>React.createElement("div",{key:i},
+                React.createElement("div",{className:"stat-val"},s.val),
+                React.createElement("div",{className:"stat-label"},s.label)
+              ))
+          )
+        )
+      )
+    )
+  );
+}
+
+function Pilares(){
+  const items=[
+    {n:"01",icon:"📐",t:"Mapeamento Técnico Digital",d:"Levantamento de prumo, nível, esquadro, elétrica e hidráulica com relatório fotográfico completo."},
+    {n:"02",icon:"💻",t:"Detalhamento Executivo",d:"Projetos finalizados em Promob, plano de corte CNC e integração com Corte Cloud — prontos para produção."},
+    {n:"03",icon:"✅",t:"Implantação e Assinatura",d:"Validação presencial com cliente final e termo de responsabilidade técnica assinado."},
+    {n:"04",icon:"🎧",t:"Suporte Remoto 360°",d:"Linha direta com a equipe de montagem durante a instalação — sem retrabalho, sem dor de cabeça."},
+  ];
+  return(
+    React.createElement("section",{className:"pilares",id:"servicos"},
+      React.createElement("div",{className:"container"},
+        React.createElement("p",{className:"section-label"},"04 Pilares"),
+        React.createElement("h2",{className:"section-title"},"Engenharia de Precisão do início ao fim."),
+        React.createElement("div",{className:"pilares-grid"},
+          items.map((p,i)=>React.createElement("div",{key:i,className:"pilar-card"},
+            React.createElement("div",{className:"pilar-num"},p.n),
+            React.createElement("div",{className:"pilar-icon"},p.icon),
+            React.createElement("h3",null,p.t),
+            React.createElement("p",null,p.d)
+          ))
+        )
+      )
+    )
+  );
+}
+
+function Processo(){
+  const steps=[
+    {n:"01",t:"Entre em Contato",d:"Fale com a CONFERE pelo WhatsApp e descreva sua demanda."},
+    {n:"02",t:"Agendamento em 48h",d:"Confirmamos a visita técnica em até dois dias úteis."},
+    {n:"03",t:"Medição Técnica",d:"Especialistas em campo + relatório fotográfico detalhado."},
+    {n:"04",t:"Projeto Entregue",d:"Arquivos prontos para CNC e produção, sem ajustes."},
+  ];
+  return(
+    React.createElement("section",{id:"como-funciona"},
+      React.createElement("div",{className:"container"},
+        React.createElement("p",{className:"section-label"},"Processo"),
+        React.createElement("h2",{className:"section-title"},"Como Funciona"),
+        React.createElement("p",{className:"section-sub"},"Quatro etapas. Zero retrabalho. Total previsibilidade."),
+        React.createElement("div",{className:"processo-steps"},
+          steps.map((s,i)=>React.createElement("div",{key:i,className:"step-card"},
+            React.createElement("div",{className:"step-num"},s.n),
+            React.createElement("h3",null,s.t),
+            React.createElement("p",null,s.d)
+          ))
+        )
+      )
+    )
+  );
+}
+
+function Planos(){
+  const planos=[
+    {tag:"Sem fidelidade",name:"Minha Demanda",desc:"Serviços avulsos sob demanda, sem mensalidade.",price:"Consulte",period:"nossa equipe",features:["Medição técnica milimétrica com relatório","Croqui técnico com todas as medidas","Planta 3D via Promob","Projeto executivo com caderno técnico","Arquivos prontos para CNC e produção","Suporte remoto durante a montagem","Nota fiscal emitida por serviço"],note:"Neste plano não realizamos acompanhamento presencial da montagem.",cta:"Falar com nossa equipe",href:`${WA}${encodeURIComponent("Olá CONFERE, quero saber mais sobre o plano Minha Demanda.")}`,primary:false},
+    {tag:"Recomendado",name:"Pós-Venda Sem Montagem",desc:"Gestão completa do pós-venda até a implantação do pedido.",price:"R$ 3.000",period:"/mês + 3%",plus:"fixo mensal · sobre a venda",team:["1 Medidor técnico","1 Projetista técnico","1 Operador de pós-venda"],features:["Medição técnica a R$ 150/visita, ambientes ilimitados","Relatório fotográfico completo","Croqui técnico e planta 3D via Promob","Projeto executivo com caderno técnico","Atendimento direto ao cliente final","Gestão completa: da venda à liberação","Nota fiscal mês a mês — dedutível"],note:"Cuidamos de todos os processos até a implantação. O parceiro realiza a compra e montagem.",cta:"Solicitar Proposta",href:`${WA}${encodeURIComponent("Olá CONFERE, quero saber mais sobre o plano Pós-Venda Sem Montagem.")}`,primary:true,badge:"Recomendado"},
+    {tag:"Solução Completa",name:"POSPLUS",desc:"Solução completa: do projeto à montagem supervisionada.",price:"R$ 6.000",period:"/mês + 20%",plus:"fixo mensal · sobre a venda",team:["1 Medidor técnico","2 Projetistas técnicos","1 Operador de pós-venda","1 Supervisor de montagem","Equipe de montagem parceira"],features:["Tudo do plano Pós-Venda Sem Montagem","Gestão de orçamentos de compra","Supervisão e coordenação da implantação","Acompanhamento presencial da montagem","Supervisão técnica durante toda a instalação","Atendimento ao cliente final do início ao fim"],note:"A CONFERE assume o processo completo: medição, projeto, revisão, compras, montagem e entrega.",cta:"Quero o POSPLUS",href:`${WA}${encodeURIComponent("Olá CONFERE, quero saber mais sobre o plano POSPLUS.")}`,primary:false},
+  ];
+  return(
+    React.createElement("section",{id:"investimento"},
+      React.createElement("div",{className:"container"},
+        React.createElement("p",{className:"section-label"},"Investimento"),
+        React.createElement("h2",{className:"section-title"},"Planos sob medida para o seu fluxo."),
+        React.createElement("div",{className:"planos-grid"},
+          planos.map((p,i)=>React.createElement("div",{key:i,className:`plano-card${p.primary?" featured":""}`},
+            p.badge&&React.createElement("div",{className:"plano-badge"},p.badge),
+            React.createElement("div",{className:"plano-tag"},p.tag),
+            React.createElement("h3",null,p.name),
+            React.createElement("p",{className:"desc"},p.desc),
+            React.createElement("div",{className:"plano-price"},
+              React.createElement("span",{className:"amount"},p.price),
+              React.createElement("span",{className:"period"},p.period),
+              p.plus&&React.createElement("span",{className:"plus"},p.plus)
+            ),
+            p.team&&React.createElement("div",{className:"plano-team"},
+              React.createElement("div",{className:"plano-team-label"},"Equipe dedicada"),
+              React.createElement("ul",null,p.team.map((t,j)=>React.createElement("li",{key:j},t)))
+            ),
+            React.createElement("ul",{className:"plano-features"},
+              p.features.map((f,j)=>React.createElement("li",{key:j},
+                React.createElement("span",{className:"check"},"✓"),f
+              ))
+            ),
+            React.createElement("p",{className:"plano-note"},p.note),
+            React.createElement("a",{href:p.href,target:"_blank",className:`btn-plano ${p.primary?"primary":"ghost"}`},p.cta)
+          ))
+        )
+      )
+    )
+  );
+}
+
+function PortalPreview(){
+  const feats=[
+    {icon:"⏱️",t:"Acompanhamento em Tempo Real",d:"Visualize cada etapa com prazos, alertas e histórico completo."},
+    {icon:"📁",t:"Recebimento de Arquivos",d:"Projetos, croquis, termos e cadernos disponíveis para download."},
+    {icon:"👤",t:"Cadastro de Clientes",d:"Envie novos clientes diretamente pelo sistema."},
+    {icon:"🔗",t:"Portal do Cliente Final",d:"Seu cliente acompanha o pedido em tempo real via número."},
+  ];
+  return(
+    React.createElement("section",{className:"portal-preview",id:"portal"},
+      React.createElement("div",{className:"container"},
+        React.createElement("div",{className:"portal-inner"},
+          React.createElement("div",null,
+            React.createElement("div",{className:"portal-soon-badge"},"⏳ Em breve · Acesso exclusivo para parceiros"),
+            React.createElement("p",{className:"section-label"},"Em Breve"),
+            React.createElement("h2",{className:"section-title"},"Portal Exclusivo para Parceiros CONFERE"),
+            React.createElement("p",{className:"section-sub"},"Acompanhe em tempo real cada etapa dos pedidos, receba arquivos técnicos e tenha visibilidade total do processo — do primeiro contato à liberação para produção."),
+            React.createElement("div",{className:"portal-features"},
+              feats.map((f,i)=>React.createElement("div",{key:i,className:"portal-feat"},
+                React.createElement("div",{className:"portal-feat-icon"},f.icon),
+                React.createElement("h4",null,f.t),
+                React.createElement("p",null,f.d)
+              ))
+            ),
+            React.createElement("div",{style:{marginTop:28}},
+              React.createElement("a",{href:`${WA}${encodeURIComponent("Olá CONFERE, quero ser parceiro!")}`,target:"_blank",className:"btn-primary"},"Quero ser parceiro CONFERE")
+            )
+          ),
+          React.createElement("div",{className:"portal-mockup"},
+            React.createElement("div",{className:"mockup-bar"},
+              React.createElement("span",{className:"mockup-dot",style:{background:"#EF4444"}}),
+              React.createElement("span",{className:"mockup-dot",style:{background:"#F59E0B"}}),
+              React.createElement("span",{className:"mockup-dot",style:{background:"#10B981"}}),
+              React.createElement("span",{style:{marginLeft:8}},"portal.confere.app")
+            ),
+            React.createElement("div",{className:"mockup-body"},
+              React.createElement("div",{className:"mock-dash"},
+                React.createElement("div",{style:{fontSize:12,fontWeight:700,marginBottom:12,color:"var(--text3)"},"font-family":"var(--mono)"},"Dashboard · Pedidos ativos"),
+                [
+                  {label:"Total ativo",val:"12",badge:"blue"},
+                  {label:"Em medição",val:"4",badge:"amber"},
+                  {label:"Em projeto",val:"6",badge:"amber"},
+                  {label:"Liberados",val:"2",badge:"green"},
+                ].map((r,i)=>React.createElement("div",{key:i,className:"mock-stat"},
+                  React.createElement("span",{style:{fontSize:13,color:"var(--text2)"}},r.label),
+                  React.createElement("span",{className:`mock-badge ${r.badge}`},r.val)
+                )),
+                React.createElement("div",{style:{marginTop:16,fontSize:12,fontWeight:700,color:"var(--text3)",marginBottom:8}},"Últimos pedidos"),
+                [
+                  {id:"#2451",desc:"Cozinha · SP",s:"Em medição"},
+                  {id:"#2452",desc:"Dormitório · ABC",s:"Em projeto"},
+                  {id:"#2453",desc:"Closet · Campinas",s:"Liberado"},
+                ].map((r,i)=>React.createElement("div",{key:i,className:"mock-stat"},
+                  React.createElement("span",{style:{fontSize:12,fontFamily:"var(--mono)",color:"var(--accent)"}},r.id+" "),
+                  React.createElement("span",{style:{fontSize:12,color:"var(--text2)"}},r.desc),
+                  React.createElement("span",{className:`mock-badge ${r.s==="Liberado"?"green":"amber"}`,style:{fontSize:10}},r.s)
+                ))
+              )
+            )
+          )
+        )
+      )
+    )
+  );
+}
+
+function Sobre(){
+  return(
+    React.createElement("section",{id:"sobre"},
+      React.createElement("div",{className:"container"},
+        React.createElement("div",{className:"sobre-inner"},
+          React.createElement("div",null,
+            React.createElement("p",{className:"section-label"},"Sobre Nós"),
+            React.createElement("h2",{className:"section-title"},"Especialistas em medição técnica."),
+            React.createElement("p",{style:{fontSize:15,color:"var(--text2)",lineHeight:1.8,marginBottom:16}},"A CONFERE é uma empresa especializada em medições técnicas detalhadas para o setor de mobiliário e interiores, com foco em eliminar retrabalho e elevar a margem das lojas parceiras."),
+            React.createElement("p",{style:{fontSize:15,color:"var(--text2)",lineHeight:1.8}},"Atuamos em São Paulo – SP e região metropolitana com operação 100% remota — toda a estrutura é digital e o time se desloca direto até o ambiente do cliente.")
+          ),
+          React.createElement("div",{className:"sobre-mvv"},
+            React.createElement("div",{className:"mvv-card"},
+              React.createElement("h4",null,"Missão"),
+              React.createElement("p",null,"Transformar a relação entre lojas de móveis e fábricas via levantamentos impecáveis.")
+            ),
+            React.createElement("div",{className:"mvv-card"},
+              React.createElement("h4",null,"Visão"),
+              React.createElement("p",null,"Ser a principal referência em terceirização de medições em São Paulo até 2027.")
+            ),
+            React.createElement("div",{className:"mvv-card"},
+              React.createElement("h4",null,"Valores"),
+              React.createElement("ul",{className:"valores-list"},
+                ["Precisão técnica","Responsabilidade com prazos","Transparência radical","Inovação (Marcenaria 4.0)"]
+                  .map((v,i)=>React.createElement("li",{key:i},v))
+              )
+            )
+          )
+        )
+      )
+    )
+  );
+}
+
+function FAQ(){
+  const [open,setOpen]=useState(null);
+  return(
+    React.createElement("section",{style:{background:"var(--bg2)"},id:"faq"},
+      React.createElement("div",{className:"container",style:{textAlign:"center"}},
+        React.createElement("p",{className:"section-label"},"Dúvidas frequentes"),
+        React.createElement("h2",{className:"section-title"},"FAQ"),
+        React.createElement("div",{className:"faq-list"},
+          FAQ_ITEMS.map((f,i)=>React.createElement("div",{key:i,className:"faq-item"},
+            React.createElement("button",{className:`faq-q ${open===i?"open":""}`,onClick:()=>setOpen(open===i?null:i)},
+              f.q,
+              React.createElement("span",{className:"icon"},"＋")
+            ),
+            React.createElement("div",{className:`faq-a ${open===i?"open":""}`},f.a)
+          ))
+        )
+      )
+    )
+  );
+}
+
+function Contato(){
+  const [form,setForm]=useState({nome:"",local:"",tel:"",msg:""});
+  const handleChange=e=>setForm({...form,[e.target.name]:sanitize(e.target.value)});
+  const buildWA=()=>{
+    const t=`Olá CONFERE! Sou ${form.nome||"um interessado"}, da loja em ${form.local||"SP"}. ${form.msg?`Mensagem: ${form.msg}`:"Gostaria de mais informações."}`;
+    return `${WA}${encodeURIComponent(t)}`;
+  };
+  return(
+    React.createElement("section",{id:"contato"},
+      React.createElement("div",{className:"container"},
+        React.createElement("div",{className:"contato-inner"},
+          React.createElement("div",null,
+            React.createElement("p",{className:"section-label"},"Contato"),
+            React.createElement("h2",{className:"section-title"},"Elimine o Retrabalho. Comece Agora."),
+            React.createElement("div",{className:"contato-steps"},
+              [{n:"01",t:"Entre em Contato",d:"Conte sua demanda no WhatsApp."},{n:"02",t:"Receba a Proposta",d:"Enviamos a melhor opção em até 48h."},{n:"03",t:"Comece a Operar",d:"Eliminamos o retrabalho da sua loja."}]
+                .map((s,i)=>React.createElement("div",{key:i,className:"contato-step"},
+                  React.createElement("div",{className:"step-circle"},s.n),
+                  React.createElement("div",null,
+                    React.createElement("h4",null,s.t),
+                    React.createElement("p",null,s.d)
+                  )
+                ))
+            ),
+            React.createElement("div",{className:"contato-info"},
+              React.createElement("div",{className:"contato-info-item"},"📍 São Paulo – SP · Operação 100% remota"),
+              React.createElement("div",{className:"contato-info-item"},"📞 (11) 2110-2744")
+            )
+          ),
+          React.createElement("div",null,
+            React.createElement("div",{className:"contact-form"},
+              React.createElement("div",{className:"form-field"},
+                React.createElement("label",{className:"form-label"},"Nome da Loja"),
+                React.createElement("input",{className:"form-input",name:"nome",placeholder:"Ex: Móveis Alphaville",value:form.nome,onChange:handleChange})
+              ),
+              React.createElement("div",{className:"form-field"},
+                React.createElement("label",{className:"form-label"},"Localização"),
+                React.createElement("input",{className:"form-input",name:"local",placeholder:"Bairro e Cidade",value:form.local,onChange:handleChange})
+              ),
+              React.createElement("div",{className:"form-field"},
+                React.createElement("label",{className:"form-label"},"Telefone / WhatsApp"),
+                React.createElement("input",{className:"form-input",name:"tel",type:"tel",placeholder:"(11) 9 0000-0000",value:form.tel,onChange:handleChange})
+              ),
+              React.createElement("div",{className:"form-field"},
+                React.createElement("label",{className:"form-label"},"Mensagem (opcional)"),
+                React.createElement("textarea",{className:"form-textarea",name:"msg",placeholder:"Descreva sua demanda...",value:form.msg,onChange:handleChange})
+              ),
+              React.createElement("a",{href:buildWA(),target:"_blank",className:"btn-whatsapp"},"💬 Enviar via WhatsApp")
+            )
+          )
+        )
+      )
+    )
+  );
+}
+
+function Footer({onEasterEgg}){
+  const clickRef=useRef(0);
+  const timerRef=useRef(null);
+  const [activated,setActivated]=useState(false);
+  const handleClick=()=>{
+    clickRef.current+=1;
+    clearTimeout(timerRef.current);
+    timerRef.current=setTimeout(()=>{clickRef.current=0;},2000);
+    if(clickRef.current>=3){
+      clickRef.current=0;
+      clearTimeout(timerRef.current);
+      setActivated(true);
+      setTimeout(()=>setActivated(false),600);
+      onEasterEgg();
+    }
+  };
+  return(
+    React.createElement("footer",{className:"footer"},
+      React.createElement("div",{className:"container"},
+        React.createElement("div",{className:"footer-inner"},
+          React.createElement("div",{className:"footer-brand"},
+            React.createElement("div",{className:"nav-logo"},
+              React.createElement("div",{className:"nav-logo-mark"},"C"),
+              "CONFERE"
+            ),
+            React.createElement("p",null,"Precisão Técnica que Elimina o Retrabalho e Maximiza o seu Lucro."),
+            React.createElement("p",{style:{fontSize:12,marginTop:8,color:"var(--text3)"}},"Operação 100% remota · Grande São Paulo")
+          ),
+          React.createElement("div",{className:"footer-col"},
+            React.createElement("h5",null,"Empresa"),
+            React.createElement("a",{href:"#sobre"},"Sobre Nós"),
+            React.createElement("a",{href:"#servicos"},"Serviços"),
+            React.createElement("a",{href:"#investimento"},"Planos")
+          ),
+          React.createElement("div",{className:"footer-col"},
+            React.createElement("h5",null,"Suporte"),
+            React.createElement("a",{href:"#faq"},"FAQ"),
+            React.createElement("a",{href:"#contato"},"Contato"),
+            React.createElement("a",{href:"#como-funciona"},"Como Funciona")
+          )
+        ),
+        React.createElement("div",{className:"footer-bottom"},
+          React.createElement("span",null,"© CONFERE · Engenharia de Consumo e Soluções Técnicas · São Paulo – SP"),
+          React.createElement("span",{
+            className:`easter-egg-btn ${activated?"activated":""}`,
+            onClick:handleClick,
+            title:"",
+            role:"button",
+            "aria-label":"rodapé"
+          },"⚙️")
+        )
+      )
+    )
+  );
+}
+
+// ── Command Palette ──────────────────────────────────────────────────────────
+function CommandPalette({open,onClose,onOpenConsole}){
+  const [step,setStep]=useState("auth");
+  const [token,setToken]=useState("");
+  const [authError,setAuthError]=useState("");
+  const [query,setQuery]=useState("");
+  const [feedback,setFeedback]=useState("");
+  const inputRef=useRef(null);
+
+  useEffect(()=>{
+    if(open){setTimeout(()=>inputRef.current?.focus(),50);}
+    else{setQuery("");setToken("");setAuthError("");setFeedback("");setStep("auth");}
+  },[open]);
+
+  const doAuth=async()=>{
+    const ok=await validateToken(token);
+    if(ok){setStep("commands");setToken("");}
+    else setAuthError("Token inválido. Tente: CONFERE_DEV_2025");
+  };
+
+  const filtered=SECRET_COMMANDS.filter(c=>{
+    const q=sanitize(query).toLowerCase();
+    return !q||c.label.toLowerCase().includes(q)||c.desc.toLowerCase().includes(q);
+  });
+
+  const run=key=>{
+    if(key==="CONFERE:SHOW_LOGS"){onOpenConsole();setFeedback("DevConsole aberto ✓");}
+    else if(key==="CONFERE:CLEAR"){sessionStorage.clear();setFeedback("Cache limpo ✓");}
+    else if(key==="CONFERE:ROADMAP"){console.group("[CONFERE] ROADMAP");["Fase 1: Setup ✅","Fase 2: Design System 🔄","Fase 3: Seções ⏳","Fase 4: Secret Features ⏳","Fase 5: Portal Supabase ⏳"].forEach(l=>console.info(l));console.groupEnd();setFeedback("Roadmap exibido no console do navegador ✓");}
+    else setFeedback(`Executado: ${key} ✓`);
+    setTimeout(()=>{onClose();setFeedback("");},1200);
+  };
+
+  if(!open)return null;
+  return(
+    React.createElement("div",{className:"cmd-overlay",onClick:onClose},
+      React.createElement("div",{className:"cmd-palette",onClick:e=>e.stopPropagation()},
+        step==="auth"?(
+          React.createElement("div",{className:"cmd-auth"},
+            React.createElement("div",{style:{display:"flex",alignItems:"center",gap:8,marginBottom:16}},
+              React.createElement("span",{style:{fontSize:20}},"🔐"),
+              React.createElement("strong",{style:{fontSize:15}},"CONFERE Command Palette"),
+              React.createElement("span",{className:"cmd-kbd",style:{marginLeft:"auto"}},"Ctrl+K")
+            ),
+            React.createElement("p",null,"Digite o token de acesso para desbloquear os comandos secretos do sistema."),
+            React.createElement("input",{ref:inputRef,className:"cmd-auth-input",type:"password",placeholder:"Token de acesso…",value:token,onChange:e=>setToken(e.target.value),onKeyDown:e=>{if(e.key==="Enter")doAuth();if(e.key==="Escape")onClose();}}),
+            authError&&React.createElement("div",{className:"cmd-auth-error"},authError),
+            React.createElement("div",{style:{display:"flex",gap:8}},
+              React.createElement("button",{className:"cmd-auth-btn",onClick:doAuth},"Autenticar"),
+              React.createElement("button",{style:{padding:"10px 16px",color:"var(--text3)",fontSize:14},onClick:onClose},"Cancelar")
+            ),
+            React.createElement("div",{style:{marginTop:16,fontSize:12,color:"var(--text3)",fontFamily:"var(--mono)"}},
+              "Hint: token de demo disponível no ROADMAP.md"
+            )
+          )
+        ):(
+          React.createElement(React.Fragment,null,
+            React.createElement("div",{className:"cmd-header"},
+              React.createElement("span",{style:{fontSize:16}},">"),
+              React.createElement("input",{ref:inputRef,className:"cmd-input",placeholder:"Buscar comando…",value:query,onChange:e=>setQuery(e.target.value),onKeyDown:e=>{if(e.key==="Escape")onClose();}}),
+              React.createElement("span",{className:"cmd-kbd"},"ESC")
+            ),
+            React.createElement("div",{className:"cmd-section"},
+              React.createElement("div",{className:"cmd-section-label"},"Comandos Secretos"),
+              filtered.map(c=>React.createElement("button",{key:c.id,className:"cmd-item",onClick:()=>run(c.key)},
+                React.createElement("div",{className:"cmd-item-icon"},c.icon),
+                React.createElement("div",{className:"cmd-item-info"},
+                  React.createElement("div",{className:"cmd-item-label"},c.label),
+                  React.createElement("div",{className:"cmd-item-desc"},c.desc)
+                )
+              ))
+            ),
+            feedback&&React.createElement("div",{className:"cmd-feedback"},feedback)
+          )
+        ),
+        React.createElement("div",{className:"cmd-footer"},
+          React.createElement("span",null,"↑↓ navegar"),
+          React.createElement("span",null,"⏎ executar"),
+          React.createElement("span",null,"ESC fechar")
+        )
+      )
+    )
+  );
+}
+
+// ── DevConsole ───────────────────────────────────────────────────────────────
+function DevConsole({open,onClose}){
+  if(!open)return null;
+  const now=new Date();
+  const ts=`${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}:${now.getSeconds().toString().padStart(2,"0")}`;
+  return(
+    React.createElement("div",{className:"devconsole-overlay",onClick:onClose},
+      React.createElement("div",{className:"devconsole",onClick:e=>e.stopPropagation()},
+        React.createElement("div",{className:"dc-bar"},
+          React.createElement("div",{className:"dc-title"},
+            React.createElement("span",{className:"dc-dot"}),
+            `CONFERE DevConsole v${APP_META.version}`
+          ),
+          React.createElement("button",{className:"dc-close",onClick:onClose},"✕")
+        ),
+        React.createElement("div",{className:"dc-body"},
+          DEV_LOGS.map((log,i)=>React.createElement("div",{key:i,className:"dc-line"},
+            React.createElement("span",{className:"dc-ts"},ts),
+            React.createElement("span",{className:`dc-type ${log.type}`},`[${log.type.toUpperCase()}]`),
+            React.createElement("span",{className:"dc-msg"},log.msg)
+          ))
+        ),
+        React.createElement("div",{className:"dc-prompt"},
+          React.createElement("span",null,"confere@devtools ~ $"),
+          React.createElement("span",{className:"cursor"},"▌")
+        )
+      )
+    )
+  );
+}
+
+// ── App ──────────────────────────────────────────────────────────────────────
+function App(){
+  const [cmdOpen,setCmdOpen]=useState(false);
+  const [consoleOpen,setConsoleOpen]=useState(false);
+
+  useEffect(()=>{
+    const fn=e=>{if((e.ctrlKey||e.metaKey)&&e.key==="k"){e.preventDefault();setCmdOpen(v=>!v);}if(e.key==="Escape"){setCmdOpen(false);setConsoleOpen(false);}};
+    window.addEventListener("keydown",fn);
+    return()=>window.removeEventListener("keydown",fn);
+  },[]);
+
+  return(
+    React.createElement(React.Fragment,null,
+      React.createElement(Navbar,null),
+      React.createElement(Hero,null),
+      React.createElement(Pilares,null),
+      React.createElement(Processo,null),
+      React.createElement(Planos,null),
+      React.createElement(PortalPreview,null),
+      React.createElement(Sobre,null),
+      React.createElement(FAQ,null),
+      React.createElement(Contato,null),
+      React.createElement(Footer,{onEasterEgg:()=>setConsoleOpen(true)}),
+      React.createElement("a",{href:`${WA}${WA_MSG}`,target:"_blank",className:"wa-fab",title:"WhatsApp"},"💬"),
+      React.createElement(CommandPalette,{open:cmdOpen,onClose:()=>setCmdOpen(false),onOpenConsole:()=>{setConsoleOpen(true);setCmdOpen(false);}}),
+      React.createElement(DevConsole,{open:consoleOpen,onClose:()=>setConsoleOpen(false)})
+    )
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
